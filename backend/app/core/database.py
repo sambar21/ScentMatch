@@ -2,6 +2,7 @@ import logging
 from typing import AsyncGenerator
 
 from app.core.config import settings
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
                                     create_async_engine)
 from sqlalchemy.ext.declarative import declarative_base
@@ -72,8 +73,8 @@ async def check_db_connection() -> bool:
     try:
         async with engine.begin() as conn:
             # Simple query to test connection
-            result = await conn.execute("SELECT 1")
-            await result.fetchone()
+            result = await conn.execute(text("SELECT 1"))
+            result.fetchone()
             logger.debug("Database connection check successful")
             return True
 
