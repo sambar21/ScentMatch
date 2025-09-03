@@ -1,27 +1,27 @@
+import time
 from contextlib import asynccontextmanager
 from typing import Annotated
 
+import psutil
 from app.core.config import settings
 from app.core.database import check_db_connection, get_db
+from app.core.error_handlers import (api_exception_handler,
+                                     database_exception_handler,
+                                     generic_exception_handler,
+                                     validation_exception_handler)
+from app.core.exceptions import BaseAPIException
+from app.core.structured_logger import log_business_event
+from app.core.validation import (validate_email,  # Fixed this line
+                                 validate_filename)
+from app.middleware.security_middleware import (request_size_middleware,
+                                                security_middleware)
+from app.middleware.simple_logging import get_correlation_id, log_requests
 from fastapi import Depends, FastAPI
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.middleware.simple_logging import log_requests, get_correlation_id
-from app.core.structured_logger import log_business_event
-from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import SQLAlchemyError
-from app.core.exceptions import BaseAPIException
-import psutil
-import time
-from app.core.validation import validate_email, validate_filename  # Fixed this line
-from app.middleware.security_middleware import security_middleware, request_size_middleware
-from app.core.error_handlers import (
-    api_exception_handler,
-    validation_exception_handler, 
-    database_exception_handler,
-    generic_exception_handler
-)
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 @asynccontextmanager
@@ -98,37 +98,40 @@ async def root():
 @app.get("/health")
 async def health_check():
     corr_id = get_correlation_id()
-    
+
     # Log business event
     log_business_event("health_check_requested", corr_id, endpoint="/health")
-    
+
     return {
         "status": "healthy",
         "service": settings.app_name,
         "version": settings.version,
-        "correlation_id": corr_id
+        "correlation_id": corr_id,
     }
+
 
 @app.get("/health/db")
 async def health_check_db():
     corr_id = get_correlation_id()
-    
+
     is_healthy = await check_db_connection()
-    
+
     # Log business event with database status
     log_business_event(
-        "database_health_check", 
-        corr_id, 
+        "database_health_check",
+        corr_id,
         database_status="healthy" if is_healthy else "unhealthy",
-        endpoint="/health/db"
+        endpoint="/health/db",
     )
-    
+
     return {
         "status": "healthy" if is_healthy else "unhealthy",
-        "database": "connected" if is_healthy else "disconnected", 
+        "database": "connected" if is_healthy else "disconnected",
         "service": settings.app_name,
-        "correlation_id": corr_id
+        "correlation_id": corr_id,
     }
+
+
 @app.get("/health/detailed")
 async def detailed_health_check(db: Annotated[AsyncSession, Depends(get_db)]):
     try:
@@ -177,37 +180,39 @@ if __name__ == "__main__":
         reload=True,  # Auto-reload on code changes (development only)
         log_level="info",
     )
+
+
 @app.get("/health/system")
 async def system_health_check():
     """Comprehensive system health check"""
     correlation_id = get_correlation_id()
-    
+
     start_time = time.time()
-    
+
     # Check system resources
     cpu_percent = psutil.cpu_percent(interval=0.1)
     memory = psutil.virtual_memory()
-    disk = psutil.disk_usage('/')
-    
+    disk = psutil.disk_usage("/")
+
     # Check database
     db_healthy = await check_db_connection()
-    
+
     # Determine overall health
     health_issues = []
-    
+
     if cpu_percent > 80:
         health_issues.append("High CPU usage")
     if memory.percent > 85:
-        health_issues.append("High memory usage")  
+        health_issues.append("High memory usage")
     if disk.percent > 90:
         health_issues.append("Low disk space")
     if not db_healthy:
         health_issues.append("Database connection failed")
-    
+
     overall_status = "healthy" if not health_issues else "degraded"
-    
+
     response_time = (time.time() - start_time) * 1000
-    
+
     return {
         "status": overall_status,
         "timestamp": time.time(),
@@ -221,20 +226,22 @@ async def system_health_check():
         "issues": health_issues,
         "service": settings.app_name,
         "version": settings.version,
-        "correlation_id": correlation_id
+        "correlation_id": correlation_id,
     }
+
+
 @app.post("/test/validation")
 async def test_validation(email: str, filename: str):
     """Test input validation"""
     correlation_id = get_correlation_id()
-    
+
     # These will raise ValidationError if invalid
     clean_email = validate_email(email)
     clean_filename = validate_filename(filename)
-    
+
     return {
         "message": "Validation successful",
         "clean_email": clean_email,
         "clean_filename": clean_filename,
-        "correlation_id": correlation_id
+        "correlation_id": correlation_id,
     }
