@@ -2,7 +2,8 @@ import time
 from contextlib import asynccontextmanager
 from typing import Annotated
 
-import psutil
+# Import psutil inside functions only to avoid blocking at import time
+# import psutil  # MOVED: This import is now done inside functions that need it
 from app.core.config import settings
 from app.core.database import check_db_connection, get_db
 from app.core.error_handlers import (api_exception_handler,
@@ -22,17 +23,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from app.services.redis_service import redis_service
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """
-    Application lifespan manager
-    Handles startup and shutdown events
-    """
     # Startup
     print(f" Starting {settings.app_name} v{settings.version}")
     print(" API Documentation available at: http://localhost:8000/docs")
+
+    # Initialize Redis connection
+    await redis_service.connect()
 
     # Test database connection on startup
     db_healthy = await check_db_connection()
@@ -47,12 +47,12 @@ async def lifespan(app: FastAPI):
     # Shutdown
     print(f" Shutting down {settings.app_name}")
 
-    # Import here to avoid circular imports
-    from app.core.database import close_db
+    # Close Redis connection
+    await redis_service.disconnect()
 
+    from app.core.database import close_db
     await close_db()
     print(" Database connections closed")
-
 
 # Create FastAPI application instance with lifespan
 app = FastAPI(
@@ -66,6 +66,7 @@ app = FastAPI(
     redoc_url="/redoc",
     openapi_url="/api/v1/openapi.json",
 )
+
 app.middleware("http")(security_middleware)
 app.middleware("http")(request_size_middleware)
 app.middleware("http")(log_requests)
@@ -78,7 +79,7 @@ app.middleware("http")(log_requests)
 # CORS middleware for frontend integration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.backend_cors_origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
     allow_headers=["*"],
@@ -166,30 +167,26 @@ async def detailed_health_check(db: Annotated[AsyncSession, Depends(get_db)]):
         }
 
 
-# Include API routers  (add these in future phases)
-# from app.api.v1.api import api_router
-# app.include_router(api_router, prefix="/api/v1")
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(
-        "app.main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,  # Auto-reload on code changes (development only)
-        log_level="info",
-    )
-
-
 @app.get("/health/system")
 async def system_health_check():
     """Comprehensive system health check"""
+    # FIXED: Import psutil inside the function to avoid blocking at module import time
+    # This ensures psutil calls only happen at runtime when the endpoint is accessed
+    try:
+        import psutil
+    except ImportError:
+        return {
+            "status": "unhealthy",
+            "error": "psutil module not available",
+            "service": settings.app_name,
+            "version": settings.version,
+        }
+    
     correlation_id = get_correlation_id()
 
     start_time = time.time()
 
-    # Check system resources
+    # Check system resources - all psutil calls now happen at runtime only
     cpu_percent = psutil.cpu_percent(interval=0.1)
     memory = psutil.virtual_memory()
     disk = psutil.disk_usage("/")
@@ -245,3 +242,21 @@ async def test_validation(email: str, filename: str):
         "clean_filename": clean_filename,
         "correlation_id": correlation_id,
     }
+
+
+# Include API routers  (add these in future phases)
+from app.api.v1.api import api_router
+app.include_router(api_router, prefix="/api/v1")
+# from app.api.v1.api import api_router
+# app.include_router(api_router, prefix="/api/v1")
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(
+        "app.main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,  # Auto-reload on code changes (development only)
+        log_level="info",
+    )

@@ -1,6 +1,5 @@
 """
 Configuration settings for the PDF Annotation Platform
-Enterprise-grade configuration management with environment validation
 """
 
 from typing import Optional
@@ -35,7 +34,10 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = Field(
         default=30, description="Token expiry in minutes"
     )
-
+    refresh_token_expire_days: int = Field(
+    default=7, description="Refresh token expiry in days"
+    )
+    
     # Application Configuration
     app_name: str = Field(
         default="PDF Annotation Platform", description="Application name"
