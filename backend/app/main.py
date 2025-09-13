@@ -23,16 +23,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.services.redis_service import redis_service
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
     print(f" Starting {settings.app_name} v{settings.version}")
     print(" API Documentation available at: http://localhost:8000/docs")
-
-    # Initialize Redis connection
-    await redis_service.connect()
 
     # Test database connection on startup
     db_healthy = await check_db_connection()
@@ -42,17 +38,15 @@ async def lifespan(app: FastAPI):
         print(" Database connection: Failed")
         print("  Application starting without database connectivity")
 
-    yield  # Application is running
+    yield
 
-    # Shutdown
     print(f" Shutting down {settings.app_name}")
 
-    # Close Redis connection
-    await redis_service.disconnect()
-
     from app.core.database import close_db
+
     await close_db()
     print(" Database connections closed")
+
 
 # Create FastAPI application instance with lifespan
 app = FastAPI(
@@ -181,7 +175,7 @@ async def system_health_check():
             "service": settings.app_name,
             "version": settings.version,
         }
-    
+
     correlation_id = get_correlation_id()
 
     start_time = time.time()
@@ -246,6 +240,7 @@ async def test_validation(email: str, filename: str):
 
 # Include API routers  (add these in future phases)
 from app.api.v1.api import api_router
+
 app.include_router(api_router, prefix="/api/v1")
 # from app.api.v1.api import api_router
 # app.include_router(api_router, prefix="/api/v1")

@@ -1,4 +1,4 @@
-# docker-compose.yml (place in project root)
+version: "3.9"
 
 services:
   # PostgreSQL Database
@@ -19,19 +19,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # Redis Cache
-  redis:
-    image: redis:7
-    ports:
-      - "6380:6379"  # Changed external port to 6380
-    volumes:
-      - redis_data:/data
-    healthcheck:     
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   # Backend API
   backend:
     build:
@@ -39,8 +26,6 @@ services:
       dockerfile: Dockerfile
     environment:
       - DATABASE_URL=postgresql://postgres:sambar22@db:5432/pdf_annotation_db
-      - REDIS_URL=redis://redis:6379  # Internal Docker network - keep as 6379
-      - REDIS_HOSTNAME=redis  # Add this line
       - SECRET_KEY=your-secret-key-change-in-production
       - DEBUG=true
     volumes:
@@ -51,8 +36,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      redis:
-        condition: service_healthy
     command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -60,9 +43,21 @@ services:
       timeout: 10s
       retries: 3
 
-
+  # Frontend (React/Vite)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "5173:3000"   # or your frontend port
+    environment:
+      - CHOKIDAR_USEPOLLING=true  # for live reload
+    depends_on:
+      - backend
+    command: ["npm", "run", "dev"]
 
 volumes:
   postgres_data:
-  redis_data:
   uploads:

@@ -35,9 +35,9 @@ class Settings(BaseSettings):
         default=30, description="Token expiry in minutes"
     )
     refresh_token_expire_days: int = Field(
-    default=7, description="Refresh token expiry in days"
+        default=7, description="Refresh token expiry in days"
     )
-    
+
     # Application Configuration
     app_name: str = Field(
         default="PDF Annotation Platform", description="Application name"
@@ -65,10 +65,7 @@ class Settings(BaseSettings):
         """
         Construct database URL from components
 
-        Tutorial Connection: Sanjeev had this hardcoded:
-        SQLALCHEMY_DATABASE_URL = "postgresql://user:pass@localhost/db"
 
-        Now we build it dynamically from environment variables
         """
         return (
             f"postgresql+asyncpg://{self.database_username}:{self.database_password}"
@@ -77,10 +74,6 @@ class Settings(BaseSettings):
 
     @property
     def redis_url(self) -> str:
-        """
-        Construct Redis URL from components
-        NEW: Sanjeev didn't cover Redis, but enterprise apps need caching
-        """
         if self.redis_password:
             return f"redis://:{self.redis_password}@{self.redis_hostname}:{self.redis_port}/0"
         return f"redis://{self.redis_hostname}:{self.redis_port}/0"

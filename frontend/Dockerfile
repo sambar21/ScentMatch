@@ -2,14 +2,20 @@
 
 WORKDIR /app
 
+# Copy package files
 COPY package*.json ./
-RUN npm ci --only=production
 
+# Install dependencies
+RUN npm ci
+
+# Copy source code
 COPY . .
 
+# Build the app
+RUN npm run build
+
+# Expose port
 EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:3000/api/health || exit 1
-
-CMD ["npm", "run", "dev"]
+# Start the app
+CMD ["npm", "start"]

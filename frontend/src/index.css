@@ -1,0 +1,117 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here.
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 25 50% 97%;
+    --foreground: 20 20% 25%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 20 20% 25%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 20% 25%;
+
+    --primary: 340 80% 65%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 25 30% 88%;
+    --secondary-foreground: 20 20% 25%;
+
+    --muted: 25 20% 92%;
+    --muted-foreground: 20 15% 55%;
+
+    --accent: 15 60% 80%;
+    --accent-foreground: 20 20% 25%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 25 15% 88%;
+    --input: 25 15% 92%;
+    --ring: 340 80% 65%;
+
+    --radius: 1rem;
+
+    /* Luxury Pastel Design Tokens */
+    --gradient-primary: linear-gradient(135deg, hsl(340 80% 65%) 0%, hsl(15 70% 75%) 50%, hsl(45 60% 85%) 100%);
+    --gradient-secondary: linear-gradient(180deg, hsl(25 50% 97%) 0%, hsl(25 40% 94%) 100%);
+    --gradient-accent: linear-gradient(90deg, hsl(340 60% 75%) 0%, hsl(15 50% 80%) 100%);
+
+    --shadow-luxury: 0 20px 40px -10px hsl(340 30% 70% / 0.15);
+    --shadow-glow: 0 8px 25px hsl(340 40% 75% / 0.2);
+    --shadow-elegant: 0 4px 20px hsl(25 20% 85% / 0.3);
+
+    --glass-bg: hsl(0 0% 100% / 0.7);
+    --glass-border: hsl(340 40% 80% / 0.3);
+
+    --transition-luxury: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: all 0.3s ease-out;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* ScentMatch uses the same elegant dark theme */
+    --background: 320 20% 7%;
+    --foreground: 320 5% 95%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    background: var(--gradient-secondary);
+    min-height: 100vh;
+  }
+
+  /* Glass morphism utility */
+  .glass {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  /* Luxury animations */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-glow {
+    animation: glow 3s ease-in-out infinite alternate;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes glow {
+    0% { box-shadow: var(--shadow-glow); }
+    100% { box-shadow: var(--shadow-luxury); }
+  }
+}
