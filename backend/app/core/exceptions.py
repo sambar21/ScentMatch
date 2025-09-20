@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 
 
 class BaseAPIException(HTTPException):
-    """Base exception for all API errors"""
+    
 
     def __init__(
         self,
@@ -22,7 +22,7 @@ class BaseAPIException(HTTPException):
 
 
 class ValidationError(BaseAPIException):
-    """400 - Bad Request"""
+    #400 - Bad Request
 
     def __init__(self, detail: str, field: str = None, correlation_id: str = None):
         super().__init__(
@@ -35,7 +35,7 @@ class ValidationError(BaseAPIException):
 
 
 class NotFoundError(BaseAPIException):
-    """404 - Resource Not Found"""
+    #404 - Resource Not Found
 
     def __init__(
         self, resource: str, resource_id: str = None, correlation_id: str = None
@@ -55,7 +55,7 @@ class NotFoundError(BaseAPIException):
 
 
 class DatabaseError(BaseAPIException):
-    """503 - Service Unavailable"""
+    #503 - Service Unavailable
 
     def __init__(self, operation: str, correlation_id: str = None):
         super().__init__(
@@ -68,7 +68,7 @@ class DatabaseError(BaseAPIException):
 
 
 class AuthenticationError(BaseAPIException):
-    """401 - Unauthorized"""
+    #401 - Unauthorized
 
     def __init__(
         self, detail: str = "Authentication required", correlation_id: str = None

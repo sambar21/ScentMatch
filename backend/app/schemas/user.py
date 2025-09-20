@@ -6,7 +6,7 @@ from typing import Optional
 
 
 class UserBase(BaseModel):
-    """Base user fields that can be shared across schemas"""
+    
     display_name: Optional[str] = Field(None, max_length=100, description="User's display name")
     first_name: Optional[str] = Field(None, max_length=50, description="User's first name")
     last_name: Optional[str] = Field(None, max_length=50, description="User's last name")
@@ -15,7 +15,7 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    """Schema for user registration"""
+    
     email: EmailStr = Field(..., description="User's email address")
     password: str = Field(
         ..., 
@@ -26,7 +26,7 @@ class UserCreate(UserBase):
     
     @field_validator('password')
     def validate_password_strength(cls, v):
-        """Ensure password meets security requirements"""
+        
         if len(v) < 8:
             raise ValueError('Password must be at least 8 characters')
         if not any(c.isupper() for c in v):
@@ -39,14 +39,14 @@ class UserCreate(UserBase):
     
     @field_validator('email')
     def validate_email_format(cls, v):
-        """Additional email validation"""
+       
         if len(v) > 255:
             raise ValueError('Email address too long')
         return v.lower()
 
 
 class UserUpdate(BaseModel):
-    """Schema for user profile updates"""
+  
     display_name: Optional[str] = Field(None, max_length=100)
     first_name: Optional[str] = Field(None, max_length=50)
     last_name: Optional[str] = Field(None, max_length=50)
@@ -55,7 +55,7 @@ class UserUpdate(BaseModel):
 
 
 class UserRead(UserBase):
-    """Schema for user data output"""
+   
     id: UUID = Field(..., description="User's unique identifier")
     email: EmailStr = Field(..., description="User's email address")
     is_active: bool = Field(..., description="Whether the user account is active")
@@ -73,13 +73,13 @@ class UserRead(UserBase):
 
 
 class UserProfile(UserRead):
-    """Extended user profile with additional fields"""
+    
     failed_login_attempts: int = Field(..., description="Failed login attempt count")
     is_superuser: bool = Field(..., description="Whether user has admin privileges")
 
 
 class UserInDB(UserBase):
-    """Internal schema with sensitive fields"""
+   
     id: UUID
     email: EmailStr
     hashed_password: str

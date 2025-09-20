@@ -51,10 +51,15 @@ export default function AuthPage() {
       console.log('Status:', response.status);
       console.log('Response body:', text);
 
-      if (response.ok) {
-        const data = JSON.parse(text);
-        localStorage.setItem('token', data.access_token);
-        router.push('/dashboard');
+        if (response.ok) {
+          const data = JSON.parse(text);
+
+        localStorage.setItem("access_token", data.access_token);
+        localStorage.setItem("refresh_token", data.refresh_token);
+        localStorage.setItem("expires_at", (Date.now() + data.expires_in * 1000).toString());
+
+        
+        router.push("/dashboard");
       } else {
         alert('Login failed! Please check your credentials.');
       }
@@ -71,14 +76,14 @@ export default function AuthPage() {
     setIsLoading(true);
 
     try {
-      console.log('📤 Sending signup data:', signupForm);
+      console.log(' Sending signup data:', signupForm);
       
       // Use environment variable for API URL, fallback to localhost
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      console.log('🌐 API URL:', API_URL);
+      console.log(' API URL:', API_URL);
       
       const endpoint = `${API_URL}/api/v1/auth/register`;
-      console.log('🔍 Using endpoint:', endpoint);
+      console.log(' Using endpoint:', endpoint);
       
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -114,7 +119,7 @@ export default function AuthPage() {
         let errorMessage = 'Registration failed';
         try {
           const errorData = JSON.parse(text);
-          console.error('❌ Error response:', errorData);
+          console.error(' Error response:', errorData);
           
           if (errorData.error) {
             // Handle the new error format from your API
@@ -139,14 +144,14 @@ export default function AuthPage() {
             errorMessage = errorData.message;
           }
         } catch (parseError) {
-          console.error('❌ Could not parse error response:', text);
+          console.error(' Could not parse error response:', text);
           errorMessage = `HTTP ${response.status}: ${text.substring(0, 200)}`;
         }
         
         alert(`Registration failed:\n${errorMessage}`);
       }
     } catch (error: any) {
-      console.error('💥 Network/Fetch error:', error);
+      console.error(' Network/Fetch error:', error);
       let errorMsg = 'Network error occurred';
       
       if (error.name === 'TypeError' && error.message.includes('fetch')) {

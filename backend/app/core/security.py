@@ -25,7 +25,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def generate_jti() -> str:
-    """Generate a unique JWT ID."""
+    
     return "".join(
         secrets.choice(string.ascii_letters + string.digits) for _ in range(32)
     )
@@ -64,7 +64,7 @@ def create_refresh_token(data: Dict[str, Any]) -> str:
 
 
 def verify_token(token: str, token_type: str = "access") -> Optional[Dict[str, Any]]:
-    """Decode JWT and verify type; no blacklist check."""
+    
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[ALGORITHM])
         if payload.get("type") != token_type:
@@ -87,7 +87,7 @@ def extract_token_from_header(authorization: str) -> Optional[str]:
 
 
 def generate_password_reset_token(email: str) -> str:
-    """Generate a short-lived token for password reset."""
+    
     data = {"email": email, "type": "password_reset"}
     expire = datetime.now(timezone.utc) + timedelta(hours=1)
     to_encode = data.copy()

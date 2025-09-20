@@ -8,7 +8,7 @@ from typing import Any, Dict
 
 
 class JSONFormatter(logging.Formatter):
-    """Custom JSON formatter for production logs"""
+    
 
     def format(self, record: logging.LogRecord) -> str:
         # Build the base log entry
@@ -43,7 +43,7 @@ class JSONFormatter(logging.Formatter):
 
 
 def setup_json_logging():
-    """Configure JSON logging for production"""
+    
 
     # Remove all existing handlers
     root_logger = logging.getLogger()
@@ -63,14 +63,14 @@ def setup_json_logging():
 
 
 def get_logger(name: str = __name__) -> logging.Logger:
-    """Get a logger instance"""
+    
     return logging.getLogger(name)
 
 
 def log_request(
     correlation_id: str, method: str, path: str, status_code: int, duration_ms: float
 ):
-    """Log HTTP request in structured format"""
+    
     logger = get_logger("http.request")
     logger.info(
         "HTTP request completed",
@@ -86,7 +86,7 @@ def log_request(
 
 
 def log_business_event(event_name: str, correlation_id: str, **kwargs):
-    """Log business events in structured format"""
+    
     logger = get_logger("business.event")
     extra_data = {
         "correlation_id": correlation_id,

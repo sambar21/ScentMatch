@@ -1,8 +1,43 @@
 'use client';
+
 import { Button } from "@/components/ui/button";
 import { Sparkles, Heart, Flower } from "lucide-react";
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import heroImage from "@/assets/hero-luxury-perfume.jpg";
+
 export const HeroSection = () => {
+  const router = useRouter();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Check if user is logged in
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    const expiresAt = localStorage.getItem('expires_at');
+    
+    if (token && expiresAt) {
+      const isExpired = Date.now() > parseInt(expiresAt);
+      setIsLoggedIn(!isExpired);
+    }
+  }, []);
+
+  const handleStartQuiz = () => {
+    if (isLoggedIn) {
+      router.push('/quiz');
+    } else {
+      router.push('/login');
+    }
+  };
+
+  const handleLogin = () => {
+    if (isLoggedIn) {
+      // Could route to account/profile page, or just stay on current page
+      router.push('/dashboard'); // or wherever you want logged in users to go
+    } else {
+      router.push('/login');
+    }
+  };
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image with Overlay */}
@@ -11,7 +46,7 @@ export const HeroSection = () => {
         style={{ backgroundImage: `url(${heroImage})` }}
       />
       <div className="absolute inset-0 bg-gradient-to-br from-background/90 via-background/70 to-background/50" />
-
+       
       {/* Floating Elements */}
       <div className="absolute top-20 left-20 animate-float">
         <div className="glass rounded-full p-4">
@@ -28,7 +63,7 @@ export const HeroSection = () => {
           <Flower className="h-8 w-8 text-primary" />
         </div>
       </div>
-
+       
       {/* Main Content */}
       <div className="relative z-10 text-center max-w-4xl mx-auto px-6">
         <h1 className="text-5xl md:text-7xl font-light mb-6 text-foreground leading-tight">
@@ -37,31 +72,39 @@ export const HeroSection = () => {
         <p className="text-xl md:text-2xl mb-8 text-muted-foreground font-light max-w-2xl mx-auto leading-relaxed">
           Discover fragrances that perfectly match your personality through AI-powered recommendations
         </p>
-
+         
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-          <Button variant="hero" size="lg" className="text-lg px-10 py-4 h-auto rounded-full">
-            Start Quiz
+          <Button 
+            variant="hero" 
+            size="lg" 
+            onClick={handleStartQuiz}
+            className="text-lg px-10 py-4 h-auto rounded-full"
+          >
+            {isLoggedIn ? 'Find Your Match' : 'Discover Your Scent'}
           </Button>
-          <Button variant="glass" size="lg" className="text-lg px-8 py-4 h-auto rounded-full">
-            Browse Scents
+           
+          <Button 
+            variant="outline" 
+            size="lg" 
+            onClick={handleLogin}
+            className="text-lg px-8 py-4 h-auto rounded-full border-pink-300/50 text-pink-600 hover:bg-pink-50"
+          >
+            {isLoggedIn ? 'Account' : 'Login'}
           </Button>
-           <Button variant="outline" size="lg" onClick={() => window.location.href = '/login'} className="text-lg px-8 py-4 h-auto rounded-full border-pink-300/50 text-pink-600 hover:bg-pink-50">
-                Login
-           </Button>
         </div>
-
+         
         {/* Stats */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="glass rounded-2xl p-6 transition-luxury hover:shadow-luxury">
-            <div className="text-3xl font-bold text-primary mb-2">10,000+</div>
+            <div className="text-3xl font-bold text-primary mb-2">20,000+</div>
             <div className="text-muted-foreground">Fragrances Analyzed</div>
           </div>
           <div className="glass rounded-2xl p-6 transition-luxury hover:shadow-luxury">
-            <div className="text-3xl font-bold text-secondary mb-2">98%</div>
+            <div className="text-3xl font-bold text-secondary mb-2">80%</div>
             <div className="text-muted-foreground">Match Accuracy</div>
           </div>
           <div className="glass rounded-2xl p-6 transition-luxury hover:shadow-luxury">
-            <div className="text-3xl font-bold text-accent mb-2">50K+</div>
+            <div className="text-3xl font-bold text-accent mb-2">50+</div>
             <div className="text-muted-foreground">Happy Users</div>
           </div>
         </div>

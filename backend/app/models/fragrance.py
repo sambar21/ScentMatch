@@ -146,7 +146,7 @@ class Fragrance(Base):
     )
 
     perfumer = Column(
-        String(255),
+        ARRAY(String),
         nullable=True,
         comment="Perfumer/nose who created it"
     )
@@ -260,6 +260,13 @@ class Fragrance(Base):
         Index("idx_fragrances_base_notes", "base_notes", postgresql_using="gin"),
         # Unique constraint
         Index("uq_fragrance_name_brand", "name", "brand_name", unique=True),
+        Index("idx_fragrances_url_unique", "url", unique=True),
+    )
+    url = Column(
+        String(500),  
+        nullable=False,  
+        unique=True,     
+        comment="Fragrantica URL"
     )
 
     def __repr__(self) -> str:

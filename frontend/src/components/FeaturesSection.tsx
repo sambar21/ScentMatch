@@ -4,12 +4,12 @@ const features = [
   {
     icon: Brain,
     title: "AI-Powered Analysis",
-    description: "Advanced machine learning algorithms analyze thousands of fragrance profiles to understand complex scent relationships and preferences."
+    description: "Our algorithms analyze thousands of fragrance profiles to understand complex scent relationships and preferences."
   },
   {
     icon: Heart,
     title: "Personalized Matching",
-    description: "Our AI learns your unique preferences, lifestyle, and personality to create a custom fragrance profile just for you."
+    description: "We learn your unique preferences, lifestyle, and personality to create a custom fragrance profile just for you."
   },
   {
     icon: Target,

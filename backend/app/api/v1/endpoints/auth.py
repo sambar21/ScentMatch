@@ -51,7 +51,7 @@ async def register_user(
         bio=user_data.bio,
         avatar_url=user_data.avatar_url,
         is_active=True,
-        is_verified=False,  # Email verification required
+        is_verified=False,  
     )
 
     db.add(db_user)
@@ -64,7 +64,7 @@ async def register_user(
 @router.post("/login")
 async def login_user(
     login_data: LoginRequest,
-    request: Request,  # ADD THIS parameter
+    request: Request,  
     db: AsyncSession = Depends(get_db),
 ) -> Dict[str, Any]:
     """
@@ -118,7 +118,7 @@ async def login_user(
             status_code=status.HTTP_403_FORBIDDEN, detail="Account is deactivated"
         )
 
-    # Successful login - reset failed attempts and update last login
+    # Successful login reset failed attempts and update last login
     user.reset_failed_attempts()
     user.last_login = datetime.now(timezone.utc)
     await db.commit()
@@ -159,7 +159,7 @@ async def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token"
         )
 
-    # Get user from database - FIXED: Use async syntax
+    # Get user from database 
     user_id = payload.get("sub")
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
@@ -180,7 +180,7 @@ async def get_current_user(
 @router.post("/refresh")
 async def refresh_tokens(
     refresh_data: RefreshTokenRequest,
-    db: AsyncSession = Depends(get_db),  # Changed from Session to AsyncSession
+    db: AsyncSession = Depends(get_db),  
 ) -> Dict[str, Any]:
     """
     Refresh access token using refresh token.
@@ -195,7 +195,7 @@ async def refresh_tokens(
             detail="Invalid or expired refresh token",
         )
 
-    # Get user - FIXED: Use async syntax
+    # Get user 
     user_id = payload.get("sub")
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
@@ -245,7 +245,7 @@ async def logout_user(
 async def update_profile(
     profile_data: UserUpdate,
     credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: AsyncSession = Depends(get_db),  # Changed from Session to AsyncSession
+    db: AsyncSession = Depends(get_db),  
 ) -> Any:
     """
     Update current user's profile information.
@@ -257,7 +257,7 @@ async def update_profile(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token"
         )
 
-    # Get user - FIXED: Use async syntax
+    # Get user 
     user_id = payload.get("sub")
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
@@ -277,3 +277,4 @@ async def update_profile(
     await db.refresh(user)  # FIXED: Added await
 
     return user
+ 

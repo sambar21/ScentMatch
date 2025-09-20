@@ -1,7 +1,33 @@
+'use client';
+
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export const CTASection = () => {
+  const router = useRouter();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Check if user is logged in
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    const expiresAt = localStorage.getItem('expires_at');
+    
+    if (token && expiresAt) {
+      const isExpired = Date.now() > parseInt(expiresAt);
+      setIsLoggedIn(!isExpired);
+    }
+  }, []);
+
+  const handleStartJourney = () => {
+    if (isLoggedIn) {
+      router.push('/quiz');
+    } else {
+      router.push('/login');
+    }
+  };
+
   return (
     <section className="py-32 px-6 relative overflow-hidden">
       {/* Background Effects */}
@@ -24,13 +50,26 @@ export const CTASection = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button variant="hero" size="lg" className="text-lg px-10 py-4 h-auto rounded-full group">
-              Start Your Journey
+            <Button 
+              variant="hero" 
+              size="lg" 
+              onClick={handleStartJourney}
+              className="text-lg px-10 py-4 h-auto rounded-full group"
+            >
+              {isLoggedIn ? 'Start Your Journey' : 'Login to Begin'}
               <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button variant="glass" size="lg" className="text-lg px-8 py-4 h-auto rounded-full">
-              Browse Collection
-            </Button>
+            
+            {!isLoggedIn && (
+              <Button 
+                variant="outline" 
+                size="lg" 
+                onClick={() => router.push('/login')}
+                className="text-lg px-8 py-4 h-auto rounded-full border-pink-300/50 text-pink-600 hover:bg-pink-50"
+              >
+                Login
+              </Button>
+            )}
           </div>
 
           <div className="mt-12 flex items-center justify-center gap-8 text-sm text-muted-foreground">

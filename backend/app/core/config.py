@@ -1,6 +1,6 @@
-"""
-Configuration settings for ScentMatch
-"""
+
+#Configuration settings for ScentMatch
+
 
 import os
 from typing import Optional

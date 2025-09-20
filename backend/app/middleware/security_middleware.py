@@ -13,14 +13,14 @@ logger = get_logger("security")
 
 
 class RateLimiter:
-    """In-memory rate limiter (use Redis in real production)"""
+    
 
     def __init__(self, requests_per_minute: int = 60):
         self.requests_per_minute = requests_per_minute
         self.requests: Dict[str, deque] = defaultdict(deque)
 
     def is_allowed(self, client_id: str) -> tuple[bool, int]:
-        """Check if request is allowed, return (allowed, remaining_requests)"""
+        
         now = time.time()
         minute_ago = now - 60
 
@@ -45,7 +45,7 @@ rate_limiter = RateLimiter(requests_per_minute=100)  # 100 requests per minute
 
 
 async def security_middleware(request: Request, call_next):
-    """Security middleware with rate limiting and headers"""
+    
 
     # Get client identifier
     client_ip = request.client.host if request.client else "unknown"

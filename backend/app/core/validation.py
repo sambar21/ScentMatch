@@ -7,7 +7,7 @@ from app.middleware.simple_logging import get_correlation_id
 
 
 def validate_email(email: str) -> str:
-    """Validate and sanitize email"""
+   
     if not email or len(email) > 254:
         raise ValidationError("Invalid email length", "email", get_correlation_id())
 
@@ -19,7 +19,7 @@ def validate_email(email: str) -> str:
 
 
 def validate_filename(filename: str) -> str:
-    """Validate and sanitize filename"""
+    
     if not filename or len(filename) > 255:
         raise ValidationError(
             "Invalid filename length", "filename", get_correlation_id()
@@ -39,7 +39,7 @@ def validate_filename(filename: str) -> str:
 
 
 def sanitize_text_input(text: str, max_length: int = 1000) -> str:
-    """Sanitize general text input"""
+    
     if not text:
         return ""
 
@@ -55,7 +55,7 @@ def sanitize_text_input(text: str, max_length: int = 1000) -> str:
 
 
 def validate_uuid(uuid_str: str, field_name: str = "id") -> str:
-    """Validate UUID format"""
+    
     uuid_pattern = r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
 
     if not re.match(uuid_pattern, uuid_str.lower()):
