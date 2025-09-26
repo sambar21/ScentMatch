@@ -3,7 +3,7 @@ import secrets
 import string
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
-
+import hashlib
 from app.core.config import settings
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -15,14 +15,30 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
 REFRESH_TOKEN_EXPIRE_DAYS = settings.refresh_token_expire_days
 
-
 def hash_password(password: str) -> str:
+    """
+    Hash a password with bcrypt, handling passwords longer than 72 bytes.
+    For passwords longer than 72 bytes, we pre-hash with SHA-256.
+    """
+    # Check if password is longer than 72 bytes
+    if len(password.encode('utf-8')) > 72:
+        # Pre-hash with SHA-256 for long passwords
+        password = hashlib.sha256(password.encode('utf-8')).hexdigest()
+    
     return pwd_context.hash(password)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """
+    Verify a password against its hash, handling passwords longer than 72 bytes.
+    Must apply the same pre-hashing logic as hash_password.
+    """
+    # Check if password is longer than 72 bytes
+    if len(plain_password.encode('utf-8')) > 72:
+        # Apply same pre-hashing as in hash_password
+        plain_password = hashlib.sha256(plain_password.encode('utf-8')).hexdigest()
+    
     return pwd_context.verify(plain_password, hashed_password)
-
 
 def generate_jti() -> str:
     
