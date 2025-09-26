@@ -83,4 +83,4 @@ python-dateutil>=2.8.2
 structlog>=23.2.0
 # System metrics
 psutil
-
+argon2-cffi==23.1.0
