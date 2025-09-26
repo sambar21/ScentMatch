@@ -8,7 +8,7 @@ from app.core.config import settings
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 # JWT Configuration
 ALGORITHM = "HS256"
