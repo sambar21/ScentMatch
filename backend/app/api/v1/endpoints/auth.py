@@ -287,3 +287,12 @@ async def debug_env():
         "bcrypt_version": getattr(bcrypt, '__version__', 'unknown'),
         "working": "old code deployed"
     }
+@router.delete("/admin/cleanup-test-users")
+async def cleanup_test_users(db: AsyncSession = Depends(get_db)):
+    from sqlalchemy import delete
+    
+    await db.execute(
+        delete(User).where(User.email.in_(['test@example.com', 'longpass@example.com']))
+    )
+    await db.commit()
+    return {"message": "Test users deleted"}
