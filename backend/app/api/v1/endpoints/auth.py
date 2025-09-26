@@ -277,4 +277,12 @@ async def update_profile(
     await db.refresh(user)  # FIXED: Added await
 
     return user
- 
+@router.get("/debug-env")
+async def debug_env():
+    import sys
+    import bcrypt
+    return {
+        "python_version": sys.version,
+        "bcrypt_version": getattr(bcrypt, '__version__', 'unknown'),
+        "working": "old code deployed"
+    }
