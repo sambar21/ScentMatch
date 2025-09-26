@@ -103,7 +103,8 @@ async def login_user(
         )
 
     # Verify password
-    if not verify_password(login_data.password, user.hashed_password):
+    safe_password = login_data.password[:72] if len(login_data.password) > 72 else login_data.password
+    if not verify_password(safe_password, user.hashed_password):
         user.failed_login_attempts += 1
         user.last_failed_login = datetime.now(timezone.utc)
         await db.commit()
