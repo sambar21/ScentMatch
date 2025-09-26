@@ -66,10 +66,7 @@ async def init_db() -> None:
 
 
 async def check_db_connection() -> bool:
-    """
-    Health check for database connection
-
-    """
+  
     try:
         async with engine.begin() as conn:
             # Simple query to test connection
@@ -84,10 +81,7 @@ async def check_db_connection() -> bool:
 
 
 async def close_db() -> None:
-    """
-    Cleanup database connections
-
-    """
+   
     try:
         await engine.dispose()
         logger.info("Database connections closed")

@@ -1,8 +1,7 @@
-
-
 import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import { MainNavigation, FloatingActions } from '@/components/navigation';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -16,16 +15,12 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  // 🔹 Debug API URL
-  if (typeof window !== "undefined") {
-    console.log("DEBUG API URL:", process.env.NEXT_PUBLIC_API_URL)
-  }
-
   return (
     <html lang="en">
       <body className={inter.className}>
-        {/* wraps ALL pages */}
+        <MainNavigation />
         {children}
+        <FloatingActions />
       </body>
     </html>
   )

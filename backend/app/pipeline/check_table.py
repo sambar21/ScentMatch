@@ -25,7 +25,7 @@ def get_db_url():
     return f"postgresql://{username}:{password}@{hostname}:{port}/{name}"
 
 def check_table_exists():
-    """Check if fragrances table exists and show its structure"""
+    
     
     engine = create_engine(get_db_url())
     inspector = inspect(engine)

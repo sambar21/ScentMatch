@@ -36,7 +36,7 @@ export default function AuthPage() {
     try {
       // Use environment variable for API URL, fallback to localhost
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      console.log('🔐 Login API URL:', API_URL);
+      console.log(' Login API URL:', API_URL);
 
       const response = await fetch(`${API_URL}/api/v1/auth/login`, {
         method: 'POST',
@@ -57,7 +57,7 @@ export default function AuthPage() {
         localStorage.setItem("access_token", data.access_token);
         localStorage.setItem("refresh_token", data.refresh_token);
         localStorage.setItem("expires_at", (Date.now() + data.expires_in * 1000).toString());
-
+        window.dispatchEvent(new Event('auth-login'));
         
         router.push("/dashboard");
       } else {

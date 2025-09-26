@@ -16,7 +16,7 @@ logger = get_logger("error_handler")
 async def api_exception_handler(
     request: Request, exc: BaseAPIException
 ) -> JSONResponse:
-    """Handle custom API exceptions"""
+    
 
     correlation_id = exc.correlation_id or get_correlation_id()
 
@@ -52,7 +52,7 @@ async def api_exception_handler(
 async def validation_exception_handler(
     request: Request, exc: RequestValidationError
 ) -> JSONResponse:
-    """Handle FastAPI validation errors (422)"""
+   
 
     correlation_id = get_correlation_id()
 
@@ -97,7 +97,7 @@ async def validation_exception_handler(
 async def database_exception_handler(
     request: Request, exc: SQLAlchemyError
 ) -> JSONResponse:
-    """Handle database errors"""
+   
 
     correlation_id = get_correlation_id()
 
@@ -130,7 +130,7 @@ async def database_exception_handler(
 
 
 async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-    """Handle unexpected errors"""
+   
 
     correlation_id = get_correlation_id()
 

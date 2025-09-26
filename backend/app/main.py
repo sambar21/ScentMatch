@@ -239,9 +239,10 @@ async def test_validation(email: str, filename: str):
 
 
 # Include API routers  (add these in future phases)
-from app.api.v1.api import api_router
+from app.api.v1.api import api_router 
 
 app.include_router(api_router, prefix="/api/v1")
+
 # from app.api.v1.api import api_router
 # app.include_router(api_router, prefix="/api/v1")
 

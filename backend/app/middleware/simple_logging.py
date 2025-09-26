@@ -21,7 +21,8 @@ def get_correlation_id() -> str:
 
 
 async def log_requests(request: Request, call_next):
-    """Production-ready request logging middleware"""
+    
+
 
     # Generate or extract correlation ID
     corr_id = request.headers.get("x-correlation-id") or str(uuid.uuid4())[:8]
@@ -29,9 +30,9 @@ async def log_requests(request: Request, call_next):
 
     start_time = time.time()
 
-    # Development: Pretty logs
+    # Development Pretty logs
     if os.getenv("ENVIRONMENT") != "production":
-        print(f"🔍 [{corr_id}] {request.method} {request.url.path} - START")
+        print(f" [{corr_id}] {request.method} {request.url.path} - START")
 
     try:
         response = await call_next(request)
@@ -50,7 +51,7 @@ async def log_requests(request: Request, call_next):
         # Development: Pretty logs
         if os.getenv("ENVIRONMENT") != "production":
             print(
-                f"✅ [{corr_id}] {request.method} {request.url.path} - {response.status_code} ({duration:.3f}s)"
+                f" [{corr_id}] {request.method} {request.url.path} - {response.status_code} ({duration:.3f}s)"
             )
 
         # Add correlation ID to response headers
@@ -67,7 +68,7 @@ async def log_requests(request: Request, call_next):
         # Development: Pretty logs
         if os.getenv("ENVIRONMENT") != "production":
             print(
-                f"💥 [{corr_id}] {request.method} {request.url.path} - ERROR: {str(e)} ({duration:.3f}s)"
+                f" [{corr_id}] {request.method} {request.url.path} - ERROR: {str(e)} ({duration:.3f}s)"
             )
 
         raise
