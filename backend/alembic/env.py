@@ -6,7 +6,8 @@ from app.core.config import settings
 from app.core.database import Base
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
-
+from app.models.fragrance import Fragrance as FragranceModel
+from app.models.UserFragranceProfile import UserScentProfile, UserFragrance
 config = context.config
 
 

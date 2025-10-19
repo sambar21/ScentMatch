@@ -6,7 +6,8 @@ from uuid import uuid4, UUID
 import time
 import logging
 import re
-
+from app.models.UserFragranceProfile import UserScentProfile, UserFragrance
+from app.models.user import User as UserModel
 from app.core.database import get_db, AsyncSessionLocal
 from app.models.fragrance import Fragrance as FragranceModel
 from app.schemas.frags import (
@@ -19,7 +20,10 @@ from app.schemas.frags import (
     convert_note_preferences,
     create_user_profile,
     convert_recommendation_to_api,
-    convert_similarity_recommendation_to_api
+    convert_similarity_recommendation_to_api,
+    SaveProfileResponse,
+    SaveQuizRatingsRequest,
+    SaveOwnedFragrancesRequest
 )
 from app.ml.models import NoteBasedRecommender, SimilarityRecommender
 
@@ -277,7 +281,7 @@ async def initialize_recommenders():
                     'total_ratings': int(frag_db.total_ratings) if frag_db.total_ratings else 0
                 })
             
-            # Create recommender instances
+            
             logger.info("Creating NoteBasedRecommender...")
             note_based_recommender = NoteBasedRecommender.from_database_rows(fragrance_rows)
             
@@ -537,4 +541,180 @@ async def get_popular_fragrances(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Popular fragrances service error"
+        )
+@router.post("/save-quiz-profile", 
+             response_model=SaveProfileResponse,
+             summary="Save quiz results to user profile",
+             description="Saves all quiz note/accord ratings. Replaces existing quiz data if user retakes.")
+async def save_quiz_to_profile(
+    request: SaveQuizRatingsRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Save user's complete quiz results to their profile.
+    - Stores ALL ratings (1-10), not just liked ones
+    - REPLACES existing quiz data if user retakes quiz
+    - Sets onboarding_complete flag
+    """
+    start_time = time.time()
+    request_id = str(uuid4())
+    
+    try:
+        logger.info(f"[{request_id}] Saving quiz profile for user {request.user_id}")
+        
+        # 1. Transform note/accord lists into rating dictionaries
+        # Convert: [NotePreferenceInput(name='vanilla', importance=9), ...]
+        # Into: {'vanilla': 9, 'bergamot': 8, ...}
+        
+        note_ratings = {
+            pref.name.lower().strip(): pref.importance 
+            for pref in request.preferred_notes
+        }
+        
+        accord_ratings = {
+            pref.name.lower().strip(): pref.importance 
+            for pref in request.preferred_accords
+        }
+        
+        logger.info(f"[{request_id}] Transformed {len(note_ratings)} notes, {len(accord_ratings)} accords")
+        
+        # 2. UPSERT UserScentProfile (replace if exists)
+        async with AsyncSessionLocal() as session:
+            # Check if profile exists
+            stmt = select(UserScentProfile).filter(
+                UserScentProfile.user_id == request.user_id
+            )
+            result = await session.execute(stmt)
+            profile = result.scalars().first()
+            
+            if profile:
+                # REPLACE existing quiz data
+                logger.info(f"[{request_id}] Updating existing profile (REPLACE mode)")
+                profile.liked_notes = note_ratings  # OVERWRITES old data
+                profile.liked_accords = accord_ratings  # OVERWRITES old data
+                profile.onboarding_complete = True
+                profile.onboarding_complete_at = func.now()
+                profile.updated_at = func.now()
+            else:
+                # INSERT new profile
+                logger.info(f"[{request_id}] Creating new profile")
+                profile = UserScentProfile(
+                    user_id=request.user_id,
+                    liked_notes=note_ratings,
+                    liked_accords=accord_ratings,
+                    onboarding_complete=True,
+                    onboarding_complete_at=func.now()
+                )
+                session.add(profile)
+            
+            await session.commit()
+            
+            processing_time = (time.time() - start_time) * 1000
+            logger.info(f"[{request_id}] Profile saved successfully in {processing_time:.1f}ms")
+            
+            return SaveProfileResponse(
+                status="success",
+                message="Quiz preferences saved to profile",
+                items_saved=len(note_ratings) + len(accord_ratings)
+            )
+            
+    except Exception as e:
+        logger.error(f"[{request_id}] Error saving profile: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to save profile: {str(e)}"
+        )
+@router.post("/save-owned-fragrances",
+             response_model=SaveProfileResponse,
+             summary="Save user's owned/liked fragrances",
+             description="Save fragrances to user's collection from onboarding or manual addition")
+async def save_owned_fragrances(
+    request: SaveOwnedFragrancesRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Save fragrances to user's collection.
+    - Used after onboarding when user selects fragrances they own
+    - Can also be used to add fragrances to collection later
+    """
+    start_time = time.time()
+    request_id = str(uuid4())
+    
+    try:
+        logger.info(f"[{request_id}] Saving {len(request.fragrance_ids)} fragrances for user {request.user_id}")
+        
+        async with AsyncSessionLocal() as session:
+            # 1. Verify user exists
+            user_stmt = select(UserModel).filter(UserModel.id == request.user_id)
+            user_result = await session.execute(user_stmt)
+            user = user_result.scalars().first()
+            
+            if not user:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"User with ID {request.user_id} not found"
+                )
+            
+            # 2. Verify all fragrances exist
+            frag_stmt = select(FragranceModel).filter(
+                FragranceModel.id.in_(request.fragrance_ids)
+            )
+            frag_result = await session.execute(frag_stmt)
+            existing_fragrances = frag_result.scalars().all()
+            existing_ids = {str(frag.id) for frag in existing_fragrances}
+            
+            # Check for invalid IDs
+            requested_ids = {str(fid) for fid in request.fragrance_ids}
+            invalid_ids = requested_ids - existing_ids
+            
+            if invalid_ids:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Fragrances not found: {list(invalid_ids)}"
+                )
+            
+            # 3. Check which fragrances already exist for this user
+            existing_stmt = select(UserFragrance).filter(
+                UserFragrance.user_id == request.user_id,
+                UserFragrance.fragrance_id.in_(request.fragrance_ids)
+            )
+            existing_result = await session.execute(existing_stmt)
+            existing_user_frags = existing_result.scalars().all()
+            existing_user_frag_ids = {str(uf.fragrance_id) for uf in existing_user_frags}
+            
+            # 4. Insert only new fragrances (avoid duplicates)
+            new_fragrances = []
+            for frag_id in request.fragrance_ids:
+                if str(frag_id) not in existing_user_frag_ids:
+                    new_frag = UserFragrance(
+                        user_id=request.user_id,
+                        fragrance_id=frag_id,
+                        source='onboarding',  # Or 'added_later' based on context
+                        owned=True
+                    )
+                    new_fragrances.append(new_frag)
+            
+            # 5. Bulk insert
+            if new_fragrances:
+                session.add_all(new_fragrances)
+                await session.commit()
+                logger.info(f"[{request_id}] Added {len(new_fragrances)} new fragrances")
+            else:
+                logger.info(f"[{request_id}] All fragrances already in user's collection")
+            
+            processing_time = (time.time() - start_time) * 1000
+            
+            return SaveProfileResponse(
+                status="success",
+                message=f"Saved {len(new_fragrances)} fragrances to collection",
+                items_saved=len(new_fragrances)
+            )
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[{request_id}] Error saving fragrances: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to save fragrances: {str(e)}"
         )

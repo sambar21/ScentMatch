@@ -13,6 +13,7 @@ const BeginnerQuiz = () => {
   const [currentAccord, setCurrentAccord] = useState('');
   const [recommendations, setRecommendations] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   // Initialize recommenders when component loads
   useEffect(() => {
@@ -37,6 +38,31 @@ const BeginnerQuiz = () => {
     };
     
     initializeRecommenders();
+  }, []);
+    useEffect(() => {
+    const getUserId = async () => {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const response = await fetch(`${API_URL}/api/v1/auth/me`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        
+        if (response.ok) {
+          const userData = await response.json();
+          setUserId(userData.id);
+          console.log(' User authenticated:', userData.id);
+        }
+      } catch (error) {
+        console.error('Failed to get user:', error);
+      }
+    };
+    
+    getUserId();
   }, []);
 
   // Common fragrance notes for suggestions
@@ -93,12 +119,8 @@ const BeginnerQuiz = () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       console.log('Making request to:', `${API_URL}/recommendations/note-based`);
-      console.log('Request body:', {
-        preferred_notes: notePreferences,
-        preferred_accords: accordPreferences,
-        limit: 10
-      });
       
+      // 1. Get recommendations
       const response = await fetch(`${API_URL}/api/v1/recommendations/note-based`, {
         method: 'POST',
         headers: {
@@ -112,7 +134,6 @@ const BeginnerQuiz = () => {
       });
       
       console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -123,17 +144,56 @@ const BeginnerQuiz = () => {
       const data = await response.json();
       console.log('Success response:', data);
       setRecommendations(data);
+      
+      // 2. AUTO-SAVE TO PROFILE (ADD THIS)
+      if (userId) {
+        await saveQuizToProfile(userId);
+      } else {
+        console.warn('⚠️ No user ID - skipping profile save');
+      }
+      
       setStep(4);
     } catch (error) {
       console.error('Full error getting recommendations:', error);
-      alert(`Error: ${error.message}`); // Temporary alert for debugging
-      // Handle error state - for now just stay on current step
+      alert(`Error: ${error.message}`); 
     } finally {
       setLoading(false);
     }
   };
 
-  
+  const saveQuizToProfile = async (userId: string) => {
+  try {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const token = localStorage.getItem('access_token');
+    
+    console.log(' Saving quiz profile for user:', userId);
+    
+    const response = await fetch(`${API_URL}/api/v1/recommendations/save-quiz-profile`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        preferred_notes: notePreferences,
+        preferred_accords: accordPreferences
+      })
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      console.log(` Quiz saved! ${result.items_saved} preferences stored`);
+      
+    } else {
+      const errorText = await response.text();
+      console.warn('⚠️ Failed to save profile:', response.status, errorText);
+    }
+  } catch (error) {
+    console.error(' Error saving profile:', error);
+    // Don't block user experience if save fails
+  }
+};
 
   const ImportanceSlider = ({ value, onChange }) => (
     <div className="space-y-2">

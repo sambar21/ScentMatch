@@ -15,6 +15,7 @@ const ExperiencedQuiz = () => {
   const [searchLoading, setSearchLoading] = useState(false);
   const [recommendations, setRecommendations] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   // Initialize recommenders when component loads
   useEffect(() => {
@@ -39,7 +40,31 @@ const ExperiencedQuiz = () => {
     
     initializeRecommenders();
   }, []);
+  useEffect(() => {
+    const getUserId = async () => {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
 
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const response = await fetch(`${API_URL}/api/v1/auth/me`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        
+        if (response.ok) {
+          const userData = await response.json();
+          setUserId(userData.id);
+          console.log(' User authenticated:', userData.id);
+        }
+      } catch (error) {
+        console.error('Failed to get user:', error);
+      }
+    };
+    
+    getUserId();
+  }, []);
   const searchFragrances = async (query) => {
     if (!query.trim() || query.length < 2) {
       setSearchResults([]);
@@ -97,51 +122,93 @@ const ExperiencedQuiz = () => {
   };
 
   const getSimilarRecommendations = async () => {
-    if (selectedFragrances.length === 0) return;
+  if (selectedFragrances.length === 0) return;
+  
+  setLoading(true);
+  try {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
     
-    setLoading(true);
-    try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      
-      console.log('Getting similar fragrances for:', selectedFragrances.map(f => f.id));
-      
-      // FIXED: Use correct field name and support multiple fragrances
-      const requestBody = {
-        target_fragrance_ids: selectedFragrances.length === 1 
-          ? selectedFragrances[0].id  // Single fragrance as string
-          : selectedFragrances.map(f => f.id), // Multiple fragrances as array
-        limit: 10
-      };
-      
-      console.log('Request body:', requestBody);
-      
-      const response = await fetch(`${API_URL}/api/v1/recommendations/similarity`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody)
-      });
-      
-      console.log('Response status:', response.status);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error response:', errorText);
-        throw new Error(`API request failed: ${response.status} - ${errorText}`);
-      }
-      
-      const data = await response.json();
-      console.log('Success response:', data);
-      setRecommendations(data);
-      setStep(4);
-    } catch (error) {
-      console.error('Full error getting recommendations:', error);
-      alert(`Error: ${error.message}`);
-    } finally {
-      setLoading(false);
+    console.log('Getting similar fragrances for:', selectedFragrances.map(f => f.id));
+    
+    // 1. Get recommendations
+    const requestBody = {
+      target_fragrance_ids: selectedFragrances.length === 1 
+        ? selectedFragrances[0].id
+        : selectedFragrances.map(f => f.id),
+      limit: 10
+    };
+    
+    console.log('Request body:', requestBody);
+    
+    const response = await fetch(`${API_URL}/api/v1/recommendations/similarity`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody)
+    });
+    
+    console.log('Response status:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Error response:', errorText);
+      throw new Error(`API request failed: ${response.status} - ${errorText}`);
     }
-  };
+    
+    const data = await response.json();
+    console.log('Success response:', data);
+    setRecommendations(data);
+    
+    // 2. AUTO-SAVE OWNED FRAGRANCES (ADD THIS)
+    if (userId) {
+      await saveOwnedFragrances(userId);
+    } else {
+      console.warn(' No user ID - skipping fragrance save');
+    }
+    
+    setStep(4);
+  } catch (error) {
+    console.error('Full error getting recommendations:', error);
+    alert(`Error: ${error.message}`);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+const saveOwnedFragrances = async (userId: string) => {
+  try {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const token = localStorage.getItem('access_token');
+    
+    console.log(' Saving owned fragrances for user:', userId);
+    
+    const response = await fetch(`${API_URL}/api/v1/recommendations/save-owned-fragrances`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        fragrance_ids: selectedFragrances.map(f => f.id)
+      })
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      console.log(` Saved ${result.items_saved} fragrances to collection`);
+      //  Show a subtle success message to user
+    } else {
+      const errorText = await response.text();
+      console.warn(' Failed to save fragrances:', response.status, errorText);
+    }
+  } catch (error) {
+    console.error(' Error saving fragrances:', error);
+    // Don't block user experience if save fails
+  }
+};
 
   if (loading) {
     return (

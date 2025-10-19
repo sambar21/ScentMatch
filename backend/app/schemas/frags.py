@@ -91,7 +91,7 @@ class NoteBasedRequest(BaseModel):
         if not v:
             return v
             
-        # Check for duplicates
+        
         names = [pref.name.lower() for pref in v]
         if len(names) != len(set(names)):
             raise ValueError("Duplicate note/accord names not allowed")
@@ -306,14 +306,35 @@ def convert_similarity_recommendation_to_api(rec: 'RecommendationResult', rank: 
         score=rec.score,
         explanation=RecommendationExplanation(
             primary_reason=primary_reason,
-            shared_notes=[],  # Could be populated with actual shared notes if needed
-            shared_accords=[],  # Could be populated with actual shared accords if needed
+            shared_notes=[], 
+            shared_accords=[], 
             quality_note=quality_note,
             similarity_score=rec.score
         ),
         rank=rank
     )
+class SaveQuizRatingsRequest(BaseModel):
+    """
+        Save complete quiz results including ALL note/accord ratings.
+        Ratings are 1-10 where:
+        - 1-3 = dislike
+        - 4-5 = neutral  
+        - 6-7 = like
+        - 8-10 = love
+    """
+    user_id: UUID
+    preferred_notes: List[NotePreferenceInput]
+    preferred_accords: List[NotePreferenceInput]
 
+
+class SaveOwnedFragrancesRequest(BaseModel):
+    user_id: UUID
+    fragrance_ids: List[UUID]
+
+class SaveProfileResponse(BaseModel):
+    status: str
+    message: str
+    items_saved : int
 
 # =====================================================
 # EXAMPLE USAGE DOCUMENTATION
