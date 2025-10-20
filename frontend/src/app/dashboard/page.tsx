@@ -16,7 +16,8 @@ import {
   ChevronRight,
   CheckCircle,
   Clock,
-  Play
+  Play,
+  TrendingUp
 } from "lucide-react";
 import heroImage from "@/assets/hero-luxury-perfume.jpg";
 
@@ -26,9 +27,11 @@ interface User {
   display_name?: string;
 }
 
-// Gradient constants (only the two you liked)
-const ICON_GRADIENT = 'linear-gradient(90deg,#ff9ab3,#ffd09e)'; // profile icon gradient
-const TEXT_GRADIENT = 'linear-gradient(90deg,#ff6b9a,#ffb26b)';  // welcome / CTA gradient
+// Original vibrant gradient colors
+const ICON_GRADIENT = 'linear-gradient(90deg, #ff9ab3, #ffd09e)';
+const TEXT_GRADIENT = 'linear-gradient(90deg, #ff6b9a, #ffb26b)';
+const ACCENT_COLOR = '#ff6b9a';
+const SOFT_ACCENT = '#ff9ab3';
 
 export default function FragranceDashboard() {
   const [user, setUser] = useState<User | null>(null);
@@ -56,7 +59,7 @@ export default function FragranceDashboard() {
         if (response.ok) {
           const userData = await response.json();
           setUser(userData);
-          setQuizTaken(false); // demo default
+          setQuizTaken(false);
         } else {
           localStorage.removeItem('access_token');
           localStorage.removeItem('refresh_token');
@@ -86,26 +89,26 @@ export default function FragranceDashboard() {
   };
 
   const userPreferences = ["Woody", "Evening", "Moderate", "Fresh"];
-  
+
   const recommendedFragrances = [
-    { name: "Tom Ford Oud Wood", brand: "Tom Ford", match: 95, image: "🌲" },
-    { name: "Creed Aventus", brand: "Creed", match: 92, image: "🍃" },
-    { name: "Maison Margiela REPLICA", brand: "Maison Margiela", match: 89, image: "🔥" }
+    { name: "Tom Ford Oud Wood", brand: "Tom Ford", match: 95, image: "🌲", notes: "Warm & Sophisticated" },
+    { name: "Creed Aventus", brand: "Creed", match: 92, image: "🍃", notes: "Fresh & Bold" },
+    { name: "Maison Margiela REPLICA", brand: "Maison Margiela", match: 89, image: "🔥", notes: "Intimate & Cozy" }
   ];
 
   const popularFragrances = [
-    { name: "Dior Sauvage", brand: "Dior", rating: 4.8, image: "🌊" },
-    { name: "Chanel Bleu de Chanel", brand: "Chanel", rating: 4.7, image: "💙" },
-    { name: "Viktor & Rolf Spicebomb", brand: "Viktor & Rolf", rating: 4.6, image: "💥" },
-    { name: "Paco Rabanne 1 Million", brand: "Paco Rabanne", rating: 4.5, image: "✨" }
+    { name: "Dior Sauvage", brand: "Dior", rating: 4.8, image: "🌊", reviews: "2.4k" },
+    { name: "Bleu de Chanel", brand: "Chanel", rating: 4.7, image: "💙", reviews: "1.8k" },
+    { name: "Spicebomb", brand: "Viktor & Rolf", rating: 4.6, image: "💥", reviews: "1.2k" },
+    { name: "1 Million", brand: "Paco Rabanne", rating: 4.5, image: "✨", reviews: "3.1k" }
   ];
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex items-center space-x-2">
-          <div className="w-6 h-6 border-2" style={{ borderColor: 'rgba(255,154,179,0.25)', borderTopColor: '#ff9ab3' , borderRadius: '9999px' , animation: 'spin 1s linear infinite' }} />
-          <span className="text-lg text-muted-foreground">Loading...</span>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-rose-50 to-orange-50">
+        <div className="flex items-center space-x-3">
+          <div className="w-8 h-8 border-3 rounded-full animate-spin" style={{ borderColor: 'rgba(255,154,179,0.25)', borderTopColor: '#ff9ab3' }} />
+          <span className="text-lg text-gray-600">Loading your profile...</span>
         </div>
       </div>
     );
@@ -114,67 +117,67 @@ export default function FragranceDashboard() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Background: hero photo + soft neutral gradient overlay to keep landing continuity */}
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-pink-50/85 via-rose-50/65 to-orange-50/55">
+      {/* Subtle background texture */}
       <div
-        className="absolute inset-0 bg-cover bg-center opacity-28"
+        className="absolute inset-0 opacity-[0.03]"
         style={{
           backgroundImage: `url(${heroImage})`,
-          filter: 'blur(6px) saturate(110%) contrast(95%)',
-          transform: 'scale(1.03)'
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          filter: 'blur(40px) saturate(80%)',
         }}
         aria-hidden
       />
-      <div className="absolute inset-0 bg-gradient-to-br from-pink-50/85 via-rose-50/65 to-orange-50/55" aria-hidden />
 
-      {/* Subtle icon accents using ICON_GRADIENT colors */}
-      <div className="absolute top-16 left-12 z-0 animate-float">
-        <div className="glass rounded-full p-3" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,250,250,0.8))' }}>
-          <Sparkles className="w-6 h-6" style={{ color: '#ff9ab3' }} />
+      {/* Elegant floating accents */}
+      <div className="absolute top-20 right-16 z-0 opacity-40 animate-float">
+        <div className="rounded-full p-4 bg-white/60 shadow-lg backdrop-blur-sm">
+          <Sparkles className="w-6 h-6" style={{ color: SOFT_ACCENT }} />
         </div>
       </div>
-      <div className="absolute bottom-12 right-12 z-0 animate-float" style={{ animationDelay: '1.2s' }}>
-        <div className="glass rounded-full p-3" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,250,250,0.8))' }}>
-          <Heart className="w-5 h-5" style={{ color: '#ffd09e' }} />
+      <div className="absolute bottom-32 left-16 z-0 opacity-30 animate-float" style={{ animationDelay: '2s' }}>
+        <div className="rounded-full p-4 bg-white/60 shadow-lg backdrop-blur-sm">
+          <Heart className="w-5 h-5" style={{ color: ACCENT_COLOR }} />
         </div>
       </div>
 
-      {/* Header */}
-      <header className="relative z-10 glass border-transparent backdrop-blur-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Refined Header */}
+      <header className="relative z-10 bg-white/70 backdrop-blur-xl border-b border-pink-100/50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            {/* Left - Logo */}
+            {/* Logo */}
             <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: ICON_GRADIENT }}>
-                <Sparkles className="w-4 h-4 text-white" />
+              <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-md" style={{ background: ICON_GRADIENT }}>
+                <Sparkles className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-2xl font-bold" style={{ background: TEXT_GRADIENT, WebkitBackgroundClip: 'text', color: 'transparent' }}>
+              <h1 className="text-2xl font-bold tracking-tight" style={{ background: TEXT_GRADIENT, WebkitBackgroundClip: 'text', color: 'transparent' }}>
                 ScentMatch
               </h1>
             </div>
 
-            {/* Center - Search */}
-            <div className="hidden md:flex items-center max-w-md w-full mx-8">
+            {/* Search */}
+            <div className="hidden md:flex items-center max-w-lg w-full mx-12">
               <div className="relative w-full">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
-                  placeholder="Search fragrances..."
-                  className="w-full pl-10 pr-4 py-2 glass border border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  placeholder="Search fragrances, brands, notes..."
+                  className="w-full pl-11 pr-4 py-2.5 bg-white/80 border border-pink-100/50 rounded-full focus:outline-none focus:ring-2 focus:ring-pink-300/50 focus:border-transparent text-sm transition-all"
                 />
               </div>
             </div>
 
-            {/* Right - User & Settings */}
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 glass px-3 py-2 rounded-full" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,250,250,0.86))' }}>
-                <User className="w-4 h-4" style={{ color: '#ff9ab3' }} />
-                <span className="text-sm font-medium text-foreground">{user.display_name || user.email}</span>
+            {/* User Actions */}
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2 bg-white/80 px-4 py-2 rounded-full border border-pink-100/50 shadow-sm">
+                <User className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+                <span className="text-sm font-medium text-gray-700">{user.display_name || user.email}</span>
               </div>
               <Button
                 variant="outline"
                 size="sm"
-                className="glass border-transparent text-foreground hover:bg-white/40 rounded-full"
+                className="bg-white/80 border-pink-100/50 text-gray-600 hover:bg-white hover:text-gray-800 rounded-full shadow-sm"
               >
                 <Settings className="w-4 h-4" />
               </Button>
@@ -182,7 +185,7 @@ export default function FragranceDashboard() {
                 onClick={handleLogout}
                 variant="outline"
                 size="sm"
-                className="glass border-transparent text-foreground hover:bg-white/40"
+                className="bg-white/80 border-pink-100/50 text-gray-600 hover:bg-white hover:text-gray-800 rounded-full shadow-sm"
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Logout
@@ -193,246 +196,287 @@ export default function FragranceDashboard() {
       </header>
 
       {/* Main Content */}
-      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* LEFT SIDEBAR */}
-          <div className="lg:col-span-1 space-y-6">
-            <Card className="glass shadow-luxury border-transparent" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,250,250,0.9))' }}>
-              <CardHeader className="text-center">
-                <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-3" style={{ background: ICON_GRADIENT }}>
-                  <User className="w-8 h-8 text-white" />
+          {/* LEFT SIDEBAR - Navigation Block */}
+          <div className="lg:col-span-1 space-y-5">
+            <Card className="bg-white/80 backdrop-blur-sm shadow-md border border-transparent rounded-2xl overflow-hidden">
+              <CardHeader className="text-center pb-4">
+                <div className="w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 shadow-lg" style={{ background: ICON_GRADIENT }}>
+                  <User className="w-10 h-10 text-white" />
                 </div>
-                <CardTitle className="text-lg">{user.display_name || 'FragranceLover'}</CardTitle>
-                <CardDescription>Account created: March 2024</CardDescription>
+                <CardTitle className="text-xl font-semibold text-foreground">{user.display_name || 'FragranceLover'}</CardTitle>
+                <CardDescription className="text-sm text-muted-foreground">Member since March 2024</CardDescription>
+                {!quizTaken && (
+                  <div className="mt-3 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-full">
+                    <div className="flex items-center justify-center gap-2">
+                      <Clock className="w-3.5 h-3.5 text-amber-600" />
+                      <span className="text-xs font-medium text-amber-700">Profile: 25% Complete</span>
+                    </div>
+                  </div>
+                )}
               </CardHeader>
             </Card>
 
-            <Card className="glass shadow-luxury border-transparent">
-              <CardHeader>
-                <CardTitle className="text-sm font-semibold text-muted-foreground">Navigation</CardTitle>
+            <Card className="bg-white/80 backdrop-blur-sm shadow-md border border-transparent rounded-2xl overflow-hidden">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Navigation</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <Button variant="ghost" className="w-full justify-start bg-white/40 text-pink-700 rounded-full">
+              <CardContent className="space-y-1.5">
+                <Button variant="ghost" className="w-full justify-start bg-gradient-to-r from-pink-100/50 to-rose-100/40 text-foreground font-medium rounded-xl hover:bg-pink-100/60">
                   Dashboard
                 </Button>
-                <Button variant="ghost" className="w-full justify-start rounded-full">My Profile</Button>
-                <Button variant="ghost" className="w-full justify-start rounded-full">Quiz Results</Button>
-                <Button variant="ghost" className="w-full justify-start rounded-full">Recommendations</Button>
+                <Button variant="ghost" className="w-full justify-start text-foreground hover:bg-white/60 rounded-xl"onClick={() => router.push('/profile')}>My Profile</Button>
+                <Button variant="ghost" className="w-full justify-start text-foreground hover:bg-white/60 rounded-xl">Quiz Results</Button>
+                <Button variant="ghost" className="w-full justify-start text-foreground hover:bg-white/60 rounded-xl">Recommendations</Button>
               </CardContent>
             </Card>
 
-            <Card className="glass shadow-luxury border-transparent">
-              <CardHeader>
-                <CardTitle className="text-sm font-semibold text-muted-foreground">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {!quizTaken ? (
-                  <Button 
-                    onClick={() => router.push('/quiz')}
-                    className="w-full" 
-                    style={{ background: TEXT_GRADIENT, color: 'white', borderRadius: 9999, padding: '0.75rem 1rem', boxShadow: 'var(--shadow-glow)' }}
-                  >
-                    <Play className="w-4 h-4 mr-2" />
-                    Take Fragrance Quiz
-                  </Button>
-                ) : (
-                  <Button variant="outline" className="w-full border-transparent text-foreground rounded-full">Update Preferences</Button>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* CENTER COLUMN */}
-          <div className="lg:col-span-2 space-y-8">
-            <Card className="glass shadow-luxury border-transparent">
-              <CardHeader className="text-center py-8">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 mx-auto animate-glow" style={{ background: ICON_GRADIENT }}>
-                  <Sparkles className="w-8 h-8 text-white" />
-                </div>
-                <CardTitle className="text-2xl font-bold" style={{ background: TEXT_GRADIENT, WebkitBackgroundClip: 'text', color: 'transparent' }}>
-                  Welcome to your fragrance journey!
-                </CardTitle>
-                <CardDescription className="text-lg mt-2">Discover scents tailored perfectly to your unique preferences</CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="glass shadow-luxury border-transparent">
-              <CardHeader>
-                <CardTitle className="text-xl font-semibold">{!quizTaken ? "Find Your Perfect Fragrance" : "Your Fragrance Profile"}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {!quizTaken ? (
-                  <div className="text-center space-y-4">
-                    <CardDescription className="text-lg">Take our quick quiz to discover scents tailored to you</CardDescription>
-                    <div className="bg-white/60 rounded-lg p-4 mb-6">
-                      <p className="text-sm text-muted-foreground mb-2">Our quiz covers:</p>
-                      <div className="flex flex-wrap gap-2 justify-center">
-                        <span className="px-3 py-1 bg-white/80 rounded-full text-xs">Fragrance Families</span>
-                        <span className="px-3 py-1 bg-white/80 rounded-full text-xs">Occasions</span>
-                        <span className="px-3 py-1 bg-white/80 rounded-full text-xs">Intensity Preferences</span>
-                      </div>
-                    </div>
-                    <Button 
-                      onClick={() => router.push('/quiz')}
-                      size="lg"
-                      style={{ background: TEXT_GRADIENT, color: 'white', padding: '0.75rem 2rem', borderRadius: 9999, boxShadow: 'var(--shadow-glow)' }}
-                    >
-                      Start Quiz
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="flex flex-wrap gap-2">
-                      {userPreferences.map((pref, index) => (
-                        <span key={index} className="px-3 py-1" style={{ background: 'rgba(255,240,250,0.9)', color: '#b84a2f', borderRadius: 9999 }}>
-                          {pref}
-                        </span>
-                      ))}
-                    </div>
-                    <Button variant="outline" className="border-transparent text-foreground rounded-full">Retake Quiz</Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="glass shadow-luxury border-transparent">
-              <CardHeader>
-                <CardTitle className="text-xl font-semibold">{!quizTaken ? "Your Recommendations" : "Recommended for You"}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {!quizTaken ? (
-                  <div className="text-center space-y-4">
-                    <CardDescription>Complete your quiz to see personalized recommendations</CardDescription>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 opacity-60">
-                      {[1, 2].map((item) => (
-                        <div key={item} className="glass border-transparent rounded-lg p-4">
-                          <div className="text-2xl mb-2">🌸</div>
-                          <div className="text-sm font-medium text-muted-foreground">Sample Fragrance</div>
-                          <div className="text-xs text-muted-foreground">Luxury Brand</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Button variant="ghost" size="sm" onClick={() => setCurrentSlide(Math.max(0, currentSlide - 1))} disabled={currentSlide === 0} className="border-transparent">
-                          <ChevronLeft className="w-4 h-4" />
-                        </Button>
-                      </div>
-                      <div>
-                        <Button variant="ghost" size="sm" onClick={() => setCurrentSlide(Math.min(recommendedFragrances.length - 1, currentSlide + 1))} disabled={currentSlide >= recommendedFragrances.length - 1} className="border-transparent">
-                          <ChevronRight className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {recommendedFragrances.slice(currentSlide, currentSlide + 2).map((fragrance, index) => (
-                        <div key={index} className="glass border-transparent rounded-lg p-4 hover:shadow-glow transition">
-                          <div className="text-2xl mb-2">{fragrance.image}</div>
-                          <div className="text-sm font-medium">{fragrance.name}</div>
-                          <div className="text-xs text-muted-foreground mb-2">{fragrance.brand}</div>
-                          <div className="flex items-center gap-1">
-                            <Heart className="w-3 h-3" style={{ color: '#ff9ab3' }} />
-                            <span className="text-xs" style={{ color: '#ff6b9a' }}>{fragrance.match}% match</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="glass shadow-luxury border-transparent">
-              <CardHeader>
-                <CardTitle className="text-xl font-semibold">Popular Fragrances</CardTitle>
-                <CardDescription>Trending choices from our community</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {popularFragrances.map((fragrance, index) => (
-                    <div key={index} className="glass border-transparent rounded-lg p-3 text-center hover:shadow-glow transition">
-                      <div className="text-xl mb-2">{fragrance.image}</div>
-                      <div className="text-xs font-medium truncate">{fragrance.name}</div>
-                      <div className="text-xs text-muted-foreground truncate">{fragrance.brand}</div>
-                      <div className="flex items-center justify-center gap-1 mt-1">
-                        <Star className="w-3 h-3 text-yellow-400" />
-                        <span className="text-xs">{fragrance.rating}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="text-center mt-4">
-                  <Button variant="outline" className="border-transparent text-foreground rounded-full">See more popular choices</Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* RIGHT SIDEBAR */}
-          <div className="lg:col-span-1 space-y-6">
-            <Card className="glass shadow-luxury border-transparent">
-              <CardHeader>
-                <CardTitle className="text-sm font-semibold text-muted-foreground">Getting Started</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                  <span className="text-sm">Account created</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  {quizTaken ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Clock className="w-4 h-4" />}
-                  <span className="text-sm">Take preference quiz</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Clock className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm">Rate your first fragrance</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Clock className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm">Explore recommendations</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="glass shadow-luxury border-transparent">
-              <CardHeader>
-                <CardTitle className="text-sm font-semibold text-muted-foreground">Your Activity</CardTitle>
+            <Card className="bg-white/80 backdrop-blur-sm shadow-md border border-transparent rounded-2xl overflow-hidden">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Your Activity</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold" style={{ color: '#ff6b9a' }}>{quizTaken ? 12 : 0}</div>
-                  <div className="text-xs text-muted-foreground">Fragrances explored</div>
+                <div className="text-center p-4 bg-gradient-to-br from-pink-50 to-orange-50/50 rounded-xl">
+                  <div className="text-3xl font-bold" style={{ color: ACCENT_COLOR }}>{quizTaken ? 12 : 0}</div>
+                  <div className="text-sm text-muted-foreground mt-1">Fragrances Explored</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-sm">Quiz completed: <span className="font-medium" style={{ color: '#ff6b9a' }}>{quizTaken ? 'Yes' : 'No'}</span></div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Quiz Status</span>
+                  <span className="font-semibold" style={{ color: quizTaken ? '#10b981' : ACCENT_COLOR }}>
+                    {quizTaken ? 'Complete' : 'Pending'}
+                  </span>
                 </div>
-                <div className="text-center">
-                  <div className="text-xs text-muted-foreground">Last activity: 2 hours ago</div>
+                <div className="text-xs text-muted-foreground text-center pt-2 border-t border-gray-100">
+                  Last active: 2 hours ago
                 </div>
               </CardContent>
             </Card>
+          </div>
 
-            <Card className="glass shadow-luxury border-transparent">
-              <CardHeader>
-                <CardTitle className="text-sm font-semibold text-muted-foreground">Next Steps</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {!quizTaken ? (
-                  <>
-                    <p className="text-sm text-muted-foreground">Complete your quiz for better recommendations</p>
-                    <p className="text-sm text-muted-foreground">Explore popular fragrances while you decide</p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-sm text-muted-foreground">Rate recommended fragrances</p>
-                    <p className="text-sm text-muted-foreground">Build your fragrance wishlist</p>
-                  </>
+          {/* CENTER & RIGHT COLUMNS */}
+          <div className="lg:col-span-3 space-y-6">
+            {/* Hero Welcome Section */}
+            <Card className="bg-gradient-to-br from-white/90 to-pink-50/60 backdrop-blur-sm shadow-xl border border-transparent rounded-2xl overflow-hidden">
+              <CardContent className="py-12 px-8 text-center">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-6 shadow-lg animate-pulse" style={{ background: ICON_GRADIENT }}>
+                  <Sparkles className="w-10 h-10 text-white" />
+                </div>
+                <h2 className="text-4xl font-bold mb-3 tracking-tight" style={{ background: TEXT_GRADIENT, WebkitBackgroundClip: 'text', color: 'transparent' }}>
+                  Welcome, {user.display_name || 'Fragrance Enthusiast'}
+                </h2>
+                <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+                  Discover your signature scent through our personalized fragrance journey. Let us guide you to perfumes that truly resonate with your unique style and preferences.
+                </p>
+                {!quizTaken && (
+                  <Button 
+                    onClick={() => router.push('/quiz')}
+                    size="lg"
+                    className="px-8 py-6 text-base font-medium text-white rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                    style={{ background: TEXT_GRADIENT }}
+                  >
+                    <Play className="w-5 h-5 mr-2" />
+                    Start Your Fragrance Quiz
+                  </Button>
                 )}
               </CardContent>
             </Card>
+
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Primary Content - Spans 2 columns */}
+              <div className="lg:col-span-2 space-y-6">
+                {/* Recommendations Section */}
+                <Card className="bg-white/80 backdrop-blur-sm shadow-md border border-transparent rounded-2xl overflow-hidden">
+                  <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-white to-pink-50/30">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-2xl font-semibold text-foreground">
+                          {!quizTaken ? "Your Personal Recommendations" : "Curated Just For You"}
+                        </CardTitle>
+                        <CardDescription className="text-muted-foreground mt-1">
+                          {!quizTaken ? "Complete your quiz to unlock personalized matches" : `${recommendedFragrances.length} fragrances matched to your profile`}
+                        </CardDescription>
+                      </div>
+                      {quizTaken && (
+                        <TrendingUp className="w-6 h-6" style={{ color: SOFT_ACCENT }} />
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    {!quizTaken ? (
+                      <div className="text-center py-8">
+                        <div className="mb-8 p-8 bg-gradient-to-br from-pink-50 to-orange-50/40 rounded-2xl border border-transparent">
+                          <div className="text-5xl mb-4 opacity-30">🌸</div>
+                          <h3 className="text-lg font-semibold text-foreground mb-3">Unlock Your Perfect Matches</h3>
+                          <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
+                            Our intelligent quiz analyzes your preferences across fragrance families, occasions, and intensity to create a truly personalized recommendation profile.
+                          </p>
+                          <div className="flex flex-wrap gap-3 justify-center mb-6">
+                            <span className="px-4 py-2 bg-white border border-pink-100 rounded-full text-xs font-medium text-gray-700 shadow-sm">
+                              Fragrance Families
+                            </span>
+                            <span className="px-4 py-2 bg-white border border-pink-100 rounded-full text-xs font-medium text-gray-700 shadow-sm">
+                              Lifestyle & Occasions
+                            </span>
+                            <span className="px-4 py-2 bg-white border border-pink-100 rounded-full text-xs font-medium text-gray-700 shadow-sm">
+                              Intensity Preferences
+                            </span>
+                          </div>
+                        </div>
+                        <Button 
+                          onClick={() => router.push('/quiz')}
+                          size="lg"
+                          className="px-8 py-3 text-white rounded-full shadow-md hover:shadow-lg transition-all"
+                          style={{ background: TEXT_GRADIENT }}
+                        >
+                          Begin Your Discovery
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {userPreferences.map((pref, index) => (
+                            <span key={index} className="px-4 py-1.5 bg-gradient-to-r from-pink-50 to-orange-50 border border-pink-200 text-gray-700 rounded-full text-sm font-medium">
+                              {pref}
+                            </span>
+                          ))}
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {recommendedFragrances.slice(currentSlide, currentSlide + 2).map((fragrance, index) => (
+                            <div key={index} className="group bg-gradient-to-br from-white to-pink-50/40 border border-transparent rounded-2xl p-6 hover:shadow-lg transition-all cursor-pointer">
+                              <div className="text-4xl mb-4">{fragrance.image}</div>
+                              <h4 className="text-base font-semibold text-foreground mb-1">{fragrance.name}</h4>
+                              <p className="text-sm text-muted-foreground mb-3">{fragrance.brand}</p>
+                              <p className="text-xs text-gray-600 mb-4 italic">{fragrance.notes}</p>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <Heart className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+                                  <span className="text-sm font-semibold" style={{ color: ACCENT_COLOR }}>{fragrance.match}% Match</span>
+                                </div>
+                                <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-foreground">
+                                  View Details
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        {recommendedFragrances.length > 2 && (
+                          <div className="flex items-center justify-center gap-3 pt-4">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => setCurrentSlide(Math.max(0, currentSlide - 1))} 
+                              disabled={currentSlide === 0}
+                              className="rounded-full border-pink-200"
+                            >
+                              <ChevronLeft className="w-4 h-4" />
+                            </Button>
+                            <span className="text-sm text-muted-foreground">
+                              {currentSlide + 1}-{Math.min(currentSlide + 2, recommendedFragrances.length)} of {recommendedFragrances.length}
+                            </span>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => setCurrentSlide(Math.min(recommendedFragrances.length - 2, currentSlide + 1))} 
+                              disabled={currentSlide >= recommendedFragrances.length - 2}
+                              className="rounded-full border-pink-200"
+                            >
+                              <ChevronRight className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Popular Fragrances */}
+                <Card className="bg-white/80 backdrop-blur-sm shadow-md border border-transparent rounded-2xl overflow-hidden">
+                  <CardHeader className="border-b border-gray-100">
+                    <CardTitle className="text-xl font-semibold text-foreground">Trending Discoveries</CardTitle>
+                    <CardDescription className="text-muted-foreground">Most loved by our community this month</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                      {popularFragrances.map((fragrance, index) => (
+                        <div key={index} className="group bg-gradient-to-br from-white to-pink-50/40 border border-transparent rounded-xl p-4 text-center hover:shadow-md transition-all cursor-pointer">
+                          <div className="text-3xl mb-3">{fragrance.image}</div>
+                          <h4 className="text-sm font-medium text-foreground mb-1 truncate">{fragrance.name}</h4>
+                          <p className="text-xs text-muted-foreground mb-3 truncate">{fragrance.brand}</p>
+                          <div className="flex items-center justify-center gap-1.5 mb-2">
+                            <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                            <span className="text-sm font-semibold text-foreground">{fragrance.rating}</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">{fragrance.reviews} reviews</p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="text-center">
+                      <Button variant="outline" className="border-pink-200 text-foreground hover:bg-pink-50 rounded-full px-6">
+                        Explore More Trending Scents
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Right Sidebar - Next Steps */}
+              <div className="lg:col-span-1 space-y-6">
+                <Card className="bg-white/80 backdrop-blur-sm shadow-md border border-transparent rounded-2xl overflow-hidden">
+                  <CardHeader className="bg-gradient-to-br from-white to-pink-50/40 border-b border-gray-100">
+                    <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Your Journey</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-5 space-y-4">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Account Created</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Welcome to ScentMatch</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      {quizTaken ? (
+                        <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      ) : (
+                        <div className="w-5 h-5 rounded-full border-2 border-gray-300 mt-0.5 flex-shrink-0" />
+                      )}
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Complete Quiz</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Unlock personalized matches</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3 opacity-50">
+                      <div className="w-5 h-5 rounded-full border-2 border-gray-300 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Rate Fragrances</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Refine your recommendations</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3 opacity-50">
+                      <div className="w-5 h-5 rounded-full border-2 border-gray-300 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Build Wishlist</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Save your favorites</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-orange-50 to-pink-50/60 backdrop-blur-sm shadow-md border border-transparent rounded-2xl overflow-hidden">
+                  <CardContent className="pt-6 text-center">
+                    <Sparkles className="w-8 h-8 mx-auto mb-3" style={{ color: ACCENT_COLOR }} />
+                    <h3 className="text-sm font-semibold text-foreground mb-2">Pro Tip</h3>
+                    <p className="text-xs text-gray-600 leading-relaxed">
+                      {!quizTaken 
+                        ? "Complete your quiz to receive expert recommendations tailored to your unique preferences and lifestyle."
+                        : "Rate at least 3 fragrances to enhance your recommendation accuracy by 40%."
+                      }
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </div>
         </div>
       </main>

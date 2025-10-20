@@ -1,5 +1,5 @@
 ﻿from fastapi import APIRouter
-from app.api.v1.endpoints import auth, recomender  
+from app.api.v1.endpoints import auth, recomender, profile
 
 api_router = APIRouter()
 
@@ -12,4 +12,6 @@ api_router.include_router(
 
 
 api_router.include_router(recomender.router)  
+api_router.include_router(profile.router)
+
 
