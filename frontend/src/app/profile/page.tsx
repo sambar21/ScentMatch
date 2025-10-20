@@ -44,14 +44,21 @@ const FragranceProfile = ({ userId: propUserId }) => {
 
   // Initialize userId from token on component mount
   useEffect(() => {
+    console.log('=== Profile Component Mount ===');
+    console.log('propUserId:', propUserId);
+    
     if (propUserId) {
+      console.log('Using propUserId:', propUserId);
       setUserId(propUserId);
       return;
     }
 
     const token = localStorage.getItem('access_token');
+    console.log('Token exists:', !!token);
+    
     if (token) {
       const decodedUserId = decodeJWT(token);
+      console.log('Decoded userId from token:', decodedUserId);
       if (decodedUserId) {
         setUserId(decodedUserId);
         return;
@@ -59,11 +66,14 @@ const FragranceProfile = ({ userId: propUserId }) => {
     }
 
     const storedUserId = localStorage.getItem('user_id');
+    console.log('Stored userId:', storedUserId);
+    
     if (storedUserId) {
       setUserId(storedUserId);
       return;
     }
 
+    console.error('No userId found anywhere!');
     setError('User ID is required. Make sure you are logged in.');
     setIsLoading(false);
   }, [propUserId]);
@@ -78,7 +88,16 @@ const FragranceProfile = ({ userId: propUserId }) => {
         setError(null);
 
         const token = localStorage.getItem('access_token');
-        const response = await fetch(`${API_BASE_URL}/profile/${userId}`, {
+        const url = `${API_BASE_URL}/profile/${userId}`;
+        
+        console.log('=== Profile Fetch ===');
+        console.log('API_BASE_URL:', API_BASE_URL);
+        console.log('userId:', userId);
+        console.log('Full URL:', url);
+        console.log('Token exists:', !!token);
+        console.log('Token preview:', token ? token.substring(0, 20) + '...' : 'none');
+        
+        const response = await fetch(url, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -88,17 +107,24 @@ const FragranceProfile = ({ userId: propUserId }) => {
           }
         });
 
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+
         if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Error response:', errorText);
+          
           if (response.status === 404) {
-            throw new Error('User profile not found');
+            throw new Error(`User profile not found for userId: ${userId}`);
           } else if (response.status === 401) {
-            throw new Error('Unauthorized - please log in');
+            throw new Error('Unauthorized - please log in again');
           } else {
-            throw new Error(`Failed to load profile (${response.status})`);
+            throw new Error(`Failed to load profile (${response.status}): ${errorText}`);
           }
         }
 
         const data = await response.json();
+        console.log('Profile data loaded successfully:', data);
         setProfileData(data);
       } catch (err) {
         console.error('Error loading profile:', err);
