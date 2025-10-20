@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,22 @@ import {
   Activity,
   AlertCircle
 } from "lucide-react";
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
+
+// Lazy load Recharts components
+const PieChart = lazy(() => import('recharts').then(mod => ({ default: mod.PieChart })));
+const Pie = lazy(() => import('recharts').then(mod => ({ default: mod.Pie })));
+const Cell = lazy(() => import('recharts').then(mod => ({ default: mod.Cell })));
+const BarChart = lazy(() => import('recharts').then(mod => ({ default: mod.BarChart })));
+const Bar = lazy(() => import('recharts').then(mod => ({ default: mod.Bar })));
+const XAxis = lazy(() => import('recharts').then(mod => ({ default: mod.XAxis })));
+const YAxis = lazy(() => import('recharts').then(mod => ({ default: mod.YAxis })));
+const Tooltip = lazy(() => import('recharts').then(mod => ({ default: mod.Tooltip })));
+const ResponsiveContainer = lazy(() => import('recharts').then(mod => ({ default: mod.ResponsiveContainer })));
+const RadarChart = lazy(() => import('recharts').then(mod => ({ default: mod.RadarChart })));
+const PolarGrid = lazy(() => import('recharts').then(mod => ({ default: mod.PolarGrid })));
+const PolarAngleAxis = lazy(() => import('recharts').then(mod => ({ default: mod.PolarAngleAxis })));
+const PolarRadiusAxis = lazy(() => import('recharts').then(mod => ({ default: mod.PolarRadiusAxis })));
+const Radar = lazy(() => import('recharts').then(mod => ({ default: mod.Radar })));
 
 const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1`;
 
@@ -130,7 +145,7 @@ const FragranceProfile = ({ userId: propUserId }) => {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50/80 via-rose-50/60 to-orange-50/50">
-        <Card className="bg-white/80 backdrop-blur-sm border-transparent p-6 max-w-md shadow-xl">
+        <Card className="bg-white/95 border-transparent p-6 max-w-md shadow-xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-red-600">
               <AlertCircle className="w-5 h-5" />
@@ -184,7 +199,7 @@ const FragranceProfile = ({ userId: propUserId }) => {
         
         {/* HEADER - Only animate once on load */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <Card className="bg-white/80 backdrop-blur-sm border-transparent shadow-xl rounded-2xl">
+          <Card className="bg-white/95 border-transparent shadow-xl rounded-2xl">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-6">
@@ -210,11 +225,11 @@ const FragranceProfile = ({ userId: propUserId }) => {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="bg-white/80 backdrop-blur-sm border-pink-100">
+                  <Button variant="outline" size="sm" className="bg-white/90 border-pink-100">
                     <Share2 className="w-4 h-4 mr-2" />
                     Share
                   </Button>
-                  <Button variant="outline" size="sm" className="bg-white/80 backdrop-blur-sm border-pink-100">
+                  <Button variant="outline" size="sm" className="bg-white/90 border-pink-100">
                     <Settings className="w-4 h-4" />
                   </Button>
                 </div>
@@ -231,7 +246,7 @@ const FragranceProfile = ({ userId: propUserId }) => {
             
             {/* Quick Stats - Simplified animations */}
             <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
-            <Card className="bg-white/80 backdrop-blur-sm border-transparent shadow-lg rounded-2xl">
+            <Card className="bg-white/95 border-transparent shadow-lg rounded-2xl">
               <CardHeader>
                 <CardTitle className="text-lg">Quick Stats</CardTitle>
               </CardHeader>
@@ -242,7 +257,7 @@ const FragranceProfile = ({ userId: propUserId }) => {
                   { icon: Sparkles, label: "Notes", value: stats.notes_explored, color: "#ffd09e" },
                   { icon: TrendingUp, label: "Explored", value: stats.total_explorations, color: "#ffe4b8" }
                 ].map((stat) => (
-                  <div key={stat.label} className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-pink-50/50 to-orange-50/50 transition-transform hover:scale-105">
+                  <div key={stat.label} className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-pink-50 to-orange-50 transition-transform hover:scale-[1.02]">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${stat.color}, ${stat.color}dd)` }}>
                         <stat.icon className="w-5 h-5 text-white" />
@@ -260,7 +275,7 @@ const FragranceProfile = ({ userId: propUserId }) => {
 
             {/* Note Breakdown - Disabled animations */}
             <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.2 }}>
-            <Card className="bg-white/80 backdrop-blur-sm border-transparent shadow-lg rounded-2xl">
+            <Card className="bg-white/95 border-transparent shadow-lg rounded-2xl">
               <CardHeader>
                 <CardTitle className="text-lg">Note Breakdown</CardTitle>
                 <CardDescription>Your favorite notes</CardDescription>
@@ -293,7 +308,7 @@ const FragranceProfile = ({ userId: propUserId }) => {
                 </ResponsiveContainer>
                 <div className="flex flex-wrap gap-2 mt-4">
                   {note_breakdown.map((note) => (
-                    <Badge key={note.name} variant="secondary" className="bg-white/60 backdrop-blur-sm text-xs">
+                    <Badge key={note.name} variant="secondary" className="bg-white/80 text-xs">
                       <div className="w-2 h-2 rounded-full mr-1" style={{ background: note.color }} />
                       {note.name}
                     </Badge>
@@ -305,7 +320,7 @@ const FragranceProfile = ({ userId: propUserId }) => {
 
             {/* Recent Activity */}
             <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.3 }}>
-            <Card className="bg-white/80 backdrop-blur-sm border-transparent shadow-lg rounded-2xl">
+            <Card className="bg-white/95 border-transparent shadow-lg rounded-2xl">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Activity className="w-4 h-4" />
@@ -331,7 +346,7 @@ const FragranceProfile = ({ userId: propUserId }) => {
           {/* CENTER COLUMN - Optimized visualization */}
           <div className="lg:col-span-6">
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, delay: 0.2 }}>
-            <Card className="bg-white/80 backdrop-blur-sm border-transparent shadow-xl rounded-2xl h-full">
+            <Card className="bg-white/95 border-transparent shadow-xl rounded-2xl h-full">
               <CardHeader className="text-center pb-3">
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-3 mx-auto animate-spin-slow" style={{ background: 'linear-gradient(135deg, #ff9ab3, #ffd09e)' }}>
                   <Sparkles className="w-8 h-8 text-white" />
@@ -342,7 +357,7 @@ const FragranceProfile = ({ userId: propUserId }) => {
                 <CardDescription>Interactive fragrance connection network</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-[600px] bg-white/40 backdrop-blur-sm rounded-lg flex items-center justify-center relative overflow-hidden border border-pink-100/50">
+                <div className="h-[600px] bg-gradient-to-br from-pink-50/30 to-orange-50/30 rounded-lg flex items-center justify-center relative overflow-hidden border border-pink-100/50">
                   <div className="absolute inset-0 bg-gradient-to-br from-pink-50 to-orange-50 opacity-40" />
                   
                   <div className="absolute inset-0 opacity-10">
@@ -406,7 +421,7 @@ const FragranceProfile = ({ userId: propUserId }) => {
             
             {/* Accord Profile */}
             <motion.div initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
-            <Card className="bg-white/80 backdrop-blur-sm border-transparent shadow-lg rounded-2xl">
+            <Card className="bg-white/95 border-transparent shadow-lg rounded-2xl">
               <CardHeader>
                 <CardTitle className="text-lg">Fragrance Families</CardTitle>
                 <CardDescription>Your accord distribution</CardDescription>
@@ -437,7 +452,7 @@ const FragranceProfile = ({ userId: propUserId }) => {
 
             {/* Radar Chart */}
             <motion.div initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.2 }}>
-            <Card className="bg-white/80 backdrop-blur-sm border-transparent shadow-lg rounded-2xl">
+            <Card className="bg-white/95 border-transparent shadow-lg rounded-2xl">
               <CardHeader>
                 <CardTitle className="text-lg">Scent Personality</CardTitle>
                 <CardDescription>Your fragrance DNA map</CardDescription>
@@ -473,14 +488,14 @@ const FragranceProfile = ({ userId: propUserId }) => {
               </CardHeader>
               <CardContent className="space-y-3">
                 {insights.map((insight, index) => (
-                  <div key={index} className="flex items-start gap-2 p-3 rounded-lg bg-gradient-to-r from-pink-50/50 to-orange-50/50 transition-transform hover:translate-x-1">
+                  <div key={index} className="flex items-start gap-2 p-3 rounded-lg bg-gradient-to-r from-pink-50 to-orange-50 transition-transform hover:translate-x-1">
                     <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold text-white" style={{ background: 'linear-gradient(135deg, #ff9ab3, #ffd09e)' }}>
                       {index + 1}
                     </div>
                     <p className="text-xs text-foreground leading-relaxed">{insight}</p>
                   </div>
                 ))}
-                <Button variant="outline" className="w-full mt-2 bg-white/60 backdrop-blur-sm border-pink-100 text-sm">
+                <Button variant="outline" className="w-full mt-2 bg-white/80 border-pink-100 text-sm">
                   Get More Insights
                   <Zap className="w-3 h-3 ml-2" />
                 </Button>
@@ -503,7 +518,7 @@ const FragranceProfile = ({ userId: propUserId }) => {
               {fragrances.map((fragrance) => (
                 <div
                   key={fragrance.id}
-                  className="bg-white/60 backdrop-blur-sm border border-pink-100 rounded-lg p-4 text-center cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-2"
+                  className="bg-white/90 border border-pink-100 rounded-lg p-4 text-center cursor-pointer hover:shadow-lg transition-all duration-200 hover:-translate-y-1 will-change-transform"
                 >
                   <div className="text-4xl mb-2">{fragrance.emoji}</div>
                   <div className="text-sm font-medium truncate">{fragrance.name}</div>
